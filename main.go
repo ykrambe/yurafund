@@ -30,11 +30,25 @@ func main() {
 	// userInput.Password = "password"
 	// userService.RegisterUser(userInput)
 
+	// input := user.LoginInput{
+	// 	Email:    "test@mail.com",
+	// 	Password: "passwordqwe",
+	// }
+	// user, err := userService.Login(input)
+	// if err != nil {
+	// 	fmt.Println("terjadi kesalahan")
+	// 	fmt.Println(err.Error())
+
+	// } else {
+	// 	fmt.Println(user)
+	// }
+
 	userHandler := handler.NewUserHandler(userService)
 
 	router := gin.Default()
 	api := router.Group("/api/v1")
 	api.POST("/users", userHandler.RegisterUser)
+	api.POST("/users/login", userHandler.Login)
 
 	router.Run()
 }
