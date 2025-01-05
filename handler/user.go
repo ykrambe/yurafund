@@ -115,7 +115,8 @@ func (h *userHandler) CheckEmailAvailability(c *gin.Context) {
 }
 
 func (h *userHandler) UploadAvatar(c *gin.Context) {
-	userID := 12
+	currentUser := c.MustGet("currentUser").(user.User)
+	userID := currentUser.ID
 	file, err := c.FormFile("avatar")
 	if err != nil {
 		data := gin.H{"is_uploaded": false}
