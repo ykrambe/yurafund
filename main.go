@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"yurafund/auth"
 	"yurafund/handler"
 	"yurafund/user"
 
@@ -22,9 +23,20 @@ func main() {
 
 	userRepository := user.NewRepository(db)
 	userService := user.NewService(userRepository)
-	userHandler := handler.NewUserHandler(userService)
+	authService := auth.NewService()
+	userHandler := handler.NewUserHandler(userService, authService)
 
-	userService.SaveAvatar(13, "images/avatar-13.png")
+	// userService.SaveAvatar(13, "images/avatar-13.png")
+	token, err := authService.ValidateToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxNn0.nLdnBx_wPlE7Tb2mEUIqe_ePOEdUL-pXNoNS3340PPQ")
+	if err != nil {
+		fmt.Println("Error", err)
+	}
+
+	if token.Valid {
+		fmt.Println("Token Valid", token)
+	} else {
+		fmt.Println("Token Invalid", token)
+	}
 
 	router := gin.Default()
 	api := router.Group("/api/v1")

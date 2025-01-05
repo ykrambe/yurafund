@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"yurafund/auth"
 	"yurafund/helper"
 	"yurafund/user"
 
@@ -11,10 +12,11 @@ import (
 
 type userHandler struct {
 	userService user.Service
+	authservice auth.Service
 }
 
-func NewUserHandler(userService user.Service) *userHandler {
-	return &userHandler{userService}
+func NewUserHandler(userService user.Service, authservice auth.Service) *userHandler {
+	return &userHandler{userService, authservice}
 }
 
 func (h *userHandler) RegisterUser(c *gin.Context) {
@@ -22,7 +24,7 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 
 	err := c.ShouldBindJSON(&input)
 	if err != nil {
-
+		fmt.Println(err)
 		errors := helper.FormatValidationError(err)
 		responseError := helper.APIResponse("Failed to process request", http.StatusUnprocessableEntity, "error", errors)
 		c.JSON(http.StatusBadRequest, responseError)
@@ -30,12 +32,21 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 	}
 	newUser, err := h.userService.RegisterUser(input)
 	if err != nil {
+		fmt.Println(err)
 		responseError := helper.APIResponse("Failed to process request", http.StatusBadRequest, "error", nil)
 		c.JSON(http.StatusBadRequest, responseError)
 		return
 	}
 	// set token jwt
-	formatter := user.FormatUser(newUser, "tokentok")
+	jwtToken, err := h.authservice.GenerateToken(newUser.ID)
+	if err != nil {
+		fmt.Println(err)
+		responseError := helper.APIResponse("Failed to process request", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, responseError)
+		return
+	}
+
+	formatter := user.FormatUser(newUser, jwtToken)
 	response := helper.APIResponse("Account has been registered", http.StatusOK, "success", formatter)
 	c.JSON(http.StatusOK, response)
 }
@@ -59,7 +70,16 @@ func (h *userHandler) Login(c *gin.Context) {
 		return
 	}
 
-	formatter := user.FormatUser(loginUser, "tokentok")
+	// set token jwt
+	jwtToken, err := h.authservice.GenerateToken(loginUser.ID)
+	if err != nil {
+		fmt.Println(err)
+		responseError := helper.APIResponse("Failed to process request", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, responseError)
+		return
+	}
+
+	formatter := user.FormatUser(loginUser, jwtToken)
 	response := helper.APIResponse("Successfuly loggedin", http.StatusOK, "success", formatter)
 	c.JSON(http.StatusOK, response)
 }

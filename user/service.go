@@ -25,6 +25,11 @@ func (s *service) RegisterUser(input RegisterUserInput) (User, error) {
 	user := User{}
 	user.Name = input.Name
 	user.Email = input.Email
+	//check if email already exist
+	getUser, _ := s.repository.FindByEmail(user.Email)
+	if getUser.ID != 0 {
+		return user, errors.New("email already exist")
+	}
 	user.Occupation = input.Occupation
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.MinCost)
 	if err != nil {
