@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 	"yurafund/auth"
+	"yurafund/campaign"
 	"yurafund/handler"
 	"yurafund/helper"
 	"yurafund/user"
@@ -18,7 +19,8 @@ import (
 
 func main() {
 	//koneksi ke database mysql with gorm
-	dsn := "freedb_yuraroot:N5C@FK6PDChn&Yh@tcp(sql.freedb.tech:3306)/freedb_yuradb?charset=utf8mb4&parseTime=True&loc=Local"
+	// dsn := "freedb_yuraroot:N5C@FK6PDChn&Yh@tcp(sql.freedb.tech:3306)/freedb_yuradb?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := ""
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err.Error())
@@ -26,12 +28,25 @@ func main() {
 	fmt.Println("Connection Opened to Database")
 
 	userRepository := user.NewRepository(db)
+	campaignRepository := campaign.NewRepository(db)
+
+	campaign, err := campaignRepository.FindByUserID(1)
+	fmt.Println("campaign")
+	fmt.Println("campaign")
+	fmt.Println("campaign")
+
+	for _, campaign := range campaign {
+		fmt.Println(campaign.Name)
+		fmt.Println(campaign.CampaignImages)
+
+	}
+
 	userService := user.NewService(userRepository)
 	authService := auth.NewService()
 	userHandler := handler.NewUserHandler(userService, authService)
 
 	// userService.SaveAvatar(13, "images/avatar-13.png")
-	token, err := authService.ValidateToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxNn0.nLdnBx_wPlE7Tb2mEUIqe_ePOEdUL-pXNoNS3340PPQ")
+	token, err := authService.ValidateToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxfQ.v64cDEe2k9U0bbF0S1NmUhJhDR3CBZoqreD_TcWifK0")
 	if err != nil {
 		fmt.Println("Error", err)
 	}
