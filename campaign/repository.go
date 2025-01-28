@@ -1,6 +1,8 @@
 package campaign
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type Repository interface {
 	FindAll() ([]Campaign, error)
