@@ -145,3 +145,24 @@ func (h *userHandler) UploadAvatar(c *gin.Context) {
 	response := helper.APIResponse("Avatar successfuly uploaded", http.StatusOK, "success", data)
 	c.JSON(http.StatusOK, response)
 }
+
+func (h *userHandler) GetUsers(c *gin.Context) {
+	// currentUser := c.MustGet("currentUser").(user.User)
+	// userRole := currentUser.Role
+	// if userRole != "admin" {
+	// response := helper.APIResponse("Only admin role can get this information", http.StatusBadRequest, "error", nil)
+	// c.JSON(http.StatusBadRequest, response)
+	// return
+	// }
+
+	users, err := h.userService.GetUsers()
+	if err != nil {
+		response := helper.APIResponse("Failed to get users", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	response := helper.APIResponse("data users", http.StatusOK, "success", users)
+	c.JSON(http.StatusOK, response)
+
+}
