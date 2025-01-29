@@ -19,7 +19,6 @@ import (
 
 func main() {
 	//koneksi ke database mysql with gorm
-	// dsn := "freedb_yuraroot:N5C@FK6PDChn&Yh@tcp(sql.freedb.tech:3306)/freedb_yuradb?charset=utf8mb4&parseTime=True&loc=Local"
 	dsn := ""
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -38,11 +37,22 @@ func main() {
 	campaignService := campaign.NewService(campaignRepository)
 	campaignHandler := handler.NewCampaignHandler(campaignService)
 
-	// userService.SaveAvatar(13, "images/avatar-13.png")
-	// _, err := authService.ValidateToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxfQ.v64cDEe2k9U0bbF0S1NmUhJhDR3CBZoqreD_TcWifK0")
+	// input := campaign.CreateCampaignInput{}
+	// input.Name = "Campaign Test"
+	// input.Description = "this is description"
+	// input.ShortDescription = "this is short description"
+	// input.GoalAmount = 1000000
+	// input.Perks = "hadiah satu, dua, dan tiga"
+	// inputUser, _ := userService.GetUserByID(1)
+
+	// input.User = inputUser
+
+	// campaign, err := campaignService.CreateCampaign(input)
 	// if err != nil {
-	// fmt.Println("Error", err)
+	// 	log.Fatal(err)
 	// }
+	// fmt.Println(campaign)
+
 	router := gin.Default()
 	router.Static("/images", "./images")
 
@@ -55,6 +65,7 @@ func main() {
 	api.GET("/users", userHandler.GetUsers)
 	api.GET("campaigns", campaignHandler.GetCampaigns)
 	api.GET("campaigns/:id", campaignHandler.GetCampaign)
+	api.POST("campaigns", authMiddleware(authService, userService), campaignHandler.CreateCampaign)
 	router.Run()
 }
 

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"yurafund/campaign"
 	"yurafund/helper"
+	"yurafund/user"
 
 	"github.com/gin-gonic/gin"
 )
@@ -48,5 +49,31 @@ func (h *campaignHandler) GetCampaign(c *gin.Context) {
 	}
 
 	response := helper.APIResponse("campaign detail", http.StatusOK, "success", campaign.FormatCampaignDetail(campaignDetail))
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *campaignHandler) CreateCampaign(c *gin.Context) {
+	var input campaign.CreateCampaignInput
+
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		errors := helper.FormatValidationError(err)
+		responseError := helper.APIResponse("Failed to create campaign", http.StatusUnprocessableEntity, "error", errors)
+		c.JSON(http.StatusBadRequest, responseError)
+		return
+	}
+
+	currentUser := c.MustGet("currentUser").(user.User)
+	input.User = currentUser
+
+	newCampaign, err := h.service.CreateCampaign(input)
+
+	if err != nil {
+		responseError := helper.APIResponse("Failed to create campaign", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, responseError)
+		return
+	}
+
+	response := helper.APIResponse("Success to create campaign", http.StatusOK, "success", campaign.FormatCampaign(newCampaign))
 	c.JSON(http.StatusOK, response)
 }
