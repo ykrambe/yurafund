@@ -9,6 +9,7 @@ import (
 	"yurafund/campaign"
 	"yurafund/handler"
 	"yurafund/helper"
+	"yurafund/transaction"
 	"yurafund/user"
 
 	"github.com/dgrijalva/jwt-go"
@@ -28,31 +29,45 @@ func main() {
 	}
 	fmt.Println("Connection Opened to Database")
 
+	//repository
 	userRepository := user.NewRepository(db)
 	campaignRepository := campaign.NewRepository(db)
+	transactionRepository := transaction.NewRepository(db)
 
+	//service
 	userService := user.NewService(userRepository)
 	authService := auth.NewService()
-	userHandler := handler.NewUserHandler(userService, authService)
-
 	campaignService := campaign.NewService(campaignRepository)
+	transactionService := transaction.NewService(transactionRepository, campaignRepository)
+
+	userHandler := handler.NewUserHandler(userService, authService)
 	campaignHandler := handler.NewCampaignHandler(campaignService)
+	transactionHandler := handler.NewTransactionHandler(transactionService)
 
 	router := gin.Default()
 	router.Static("/images", "./images")
 
+	// list endpoint
 	api := router.Group("/api/v1")
+
+	// endpoint user
 	api.POST("/users", userHandler.RegisterUser)
 	api.POST("/sessions", userHandler.Login)
 	api.POST("/email_checkkers", userHandler.CheckEmailAvailability)
 	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar)
 	// api.GET("/users", authMiddleware(authService, userService), userHandler.GetUsers)
 	api.GET("/users", authMiddleware(authService, userService), userHandler.GetUsers)
+
+	// endpoint campaign
 	api.GET("campaigns", authMiddleware(authService, userService), campaignHandler.GetCampaigns)
 	api.GET("campaigns/:id", authMiddleware(authService, userService), campaignHandler.GetCampaign)
 	api.POST("campaigns", authMiddleware(authService, userService), campaignHandler.CreateCampaign)
 	api.PUT("campaigns/:id", authMiddleware(authService, userService), campaignHandler.UpdateCampaign)
 	api.POST("campaign-images", authMiddleware(authService, userService), campaignHandler.Uploadimage)
+
+	// endpoint transaction
+	api.GET("campaigns/:id/transactions", authMiddleware(authService, userService), transactionHandler.GetCampaignTransaction)
+
 	router.Run()
 }
 
