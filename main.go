@@ -59,14 +59,15 @@ func main() {
 	api.GET("/users", authMiddleware(authService, userService), userHandler.GetUsers)
 
 	// endpoint campaign
-	api.GET("campaigns", authMiddleware(authService, userService), campaignHandler.GetCampaigns)
-	api.GET("campaigns/:id", authMiddleware(authService, userService), campaignHandler.GetCampaign)
-	api.POST("campaigns", authMiddleware(authService, userService), campaignHandler.CreateCampaign)
-	api.PUT("campaigns/:id", authMiddleware(authService, userService), campaignHandler.UpdateCampaign)
-	api.POST("campaign-images", authMiddleware(authService, userService), campaignHandler.Uploadimage)
+	api.GET("/campaigns", authMiddleware(authService, userService), campaignHandler.GetCampaigns)
+	api.GET("/campaigns/:id", authMiddleware(authService, userService), campaignHandler.GetCampaign)
+	api.POST("/campaigns", authMiddleware(authService, userService), campaignHandler.CreateCampaign)
+	api.PUT("/campaigns/:id", authMiddleware(authService, userService), campaignHandler.UpdateCampaign)
+	api.POST("/campaign-images", authMiddleware(authService, userService), campaignHandler.Uploadimage)
 
 	// endpoint transaction
-	api.GET("campaigns/:id/transactions", authMiddleware(authService, userService), transactionHandler.GetCampaignTransaction)
+	api.GET("/campaigns/:id/transactions", authMiddleware(authService, userService), transactionHandler.GetCampaignTransactions)
+	api.GET("/transactions", authMiddleware(authService, userService), transactionHandler.GetUserTransactions)
 
 	router.Run()
 }

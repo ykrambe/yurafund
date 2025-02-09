@@ -7,13 +7,8 @@ type repository struct {
 }
 
 type Repository interface {
-	// Save(Transaction) (Transaction, error)
-	// FindByCampaignID(int) ([]Transaction, error)
-	// FindById(int) (Transaction, error)
-	// Update(Transaction) (Transaction, error)
-
 	GetTransactionByCampaignID(campaignID int) ([]Transaction, error)
-	// GetTransactionByUserID(userID int) ([]Transaction, error)
+	GetTransactionByUserID(userID int) ([]Transaction, error)
 	// GetTransactions() ([]Transaction, error)
 }
 
@@ -32,24 +27,24 @@ func (r *repository) GetTransactionByCampaignID(campaignID int) ([]Transaction, 
 	return transaction, nil
 }
 
-// func (r *repository) GetTransactionByUserID(userID int) ([]Transaction, error) {
-// 	var transactions []Transaction
+func (r *repository) GetTransactionByUserID(userID int) ([]Transaction, error) {
+	var transactions []Transaction
+	// preload 2 kali untuk mengambil data campaign lalu campaign imagesnya
+	err := r.db.Preload("Campaign.CampaignImages", "campaign_images.is_primary = 1").Where("user_id = ?", userID).Order("created_at desc").Find(&transactions).Error
+	if err != nil {
+		return transactions, err
+	}
 
-// 	err := r.db.Where("user_id = ?", userID).Order("created_at desc").Find(&transactions).Error
-// 	if err != nil {
-// 		return transactions, err
-// 	}
+	return transactions, nil
+}
 
-// 	return transactions, nil
-// }
+func (r *repository) GetTransactions() ([]Transaction, error) {
+	var transactions []Transaction
 
-// func (r *repository) GetTransactions() ([]Transaction, error) {
-// 	var transactions []Transaction
+	err := r.db.Order("created_at desc").Find(&transactions).Error
+	if err != nil {
+		return transactions, err
+	}
 
-// 	err := r.db.Order("created_at desc").Find(&transactions).Error
-// 	if err != nil {
-// 		return transactions, err
-// 	}
-
-// 	return transactions, nil
-// }
+	return transactions, nil
+}
