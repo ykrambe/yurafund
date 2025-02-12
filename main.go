@@ -9,10 +9,12 @@ import (
 	"yurafund/campaign"
 	"yurafund/handler"
 	"yurafund/helper"
+	"yurafund/payment"
 	"yurafund/transaction"
 	"yurafund/user"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -38,7 +40,8 @@ func main() {
 	userService := user.NewService(userRepository)
 	authService := auth.NewService()
 	campaignService := campaign.NewService(campaignRepository)
-	transactionService := transaction.NewService(transactionRepository, campaignRepository)
+	paymentSercice := payment.NewService()
+	transactionService := transaction.NewService(transactionRepository, campaignRepository, paymentSercice)
 
 	userHandler := handler.NewUserHandler(userService, authService)
 	campaignHandler := handler.NewCampaignHandler(campaignService)
@@ -46,7 +49,7 @@ func main() {
 
 	router := gin.Default()
 	router.Static("/images", "./images")
-
+	router.Use(cors.Default())
 	// list endpoint
 	api := router.Group("/api/v1")
 
@@ -55,8 +58,8 @@ func main() {
 	api.POST("/sessions", userHandler.Login)
 	api.POST("/email_checkkers", userHandler.CheckEmailAvailability)
 	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar)
-	// api.GET("/users", authMiddleware(authService, userService), userHandler.GetUsers)
 	api.GET("/users", authMiddleware(authService, userService), userHandler.GetUsers)
+	api.GET("/users/fetch", authMiddleware(authService, userService), userHandler.FetchUser)
 
 	// endpoint campaign
 	api.GET("/campaigns", authMiddleware(authService, userService), campaignHandler.GetCampaigns)
@@ -68,6 +71,8 @@ func main() {
 	// endpoint transaction
 	api.GET("/campaigns/:id/transactions", authMiddleware(authService, userService), transactionHandler.GetCampaignTransactions)
 	api.GET("/transactions", authMiddleware(authService, userService), transactionHandler.GetUserTransactions)
+	api.POST("/transactions", authMiddleware(authService, userService), transactionHandler.CreateTransaction)
+	api.POST("/transactions/notification", transactionHandler.GetNotification)
 
 	router.Run()
 }
