@@ -1,6 +1,7 @@
 package payment
 
 import (
+	"os"
 	"strconv"
 	"yurafund/user"
 
@@ -21,8 +22,8 @@ func NewService() *service {
 func (s *service) GetPaymentURL(transaction Transaction, user user.User) (string, error) {
 	// get payment url from midtrans
 	midclient := midtrans.NewClient()
-	midclient.ServerKey = "YOUR-VT-SERVER-KEY"
-	midclient.ClientKey = "YOUR-VT-CLIENT-KEY"
+	midclient.ServerKey = os.Getenv("MIDTRANS_SERVER_KEY")
+	midclient.ClientKey = os.Getenv("MIDTRANS_CLIENT_KEY")
 
 	midclient.APIEnvType = midtrans.Sandbox
 

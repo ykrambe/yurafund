@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 	"yurafund/auth"
@@ -22,15 +23,29 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
+func validationEnv(vars ...string) {
+	for _, v := range vars {
+		if os.Getenv(v) == "" {
+			log.Fatalf("Error: Missing required environment variable: %s", v)
+		}
+	}
+}
+
 func main() {
 	//koneksi ke database mysql with gorm
-	// dsn := "freedb_yuraroot:N5C@FK6PDChn&Yh@tcp(sql.freedb.tech:3306)/freedb_yuradb?charset=utf8mb4&parseTime=True&loc=Local"
-	dsn := ""
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal(".env file not found")
+	}
 
+	validationEnv("PORT", "DATABASE_URL", "MIDTRANS_SERVER_KEY", "MIDTRANS_CLIENT_KEY", "JWT_SECRET", "SESSION_NAME")
+
+	dsn := os.Getenv("DATABASE_URL")
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err.Error())
@@ -63,7 +78,7 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.Default())
 	cookieStore := cookie.NewStore([]byte(auth.SECRET_KEY))
-	router.Use(sessions.Sessions("yurafund", cookieStore))
+	router.Use(sessions.Sessions(os.Getenv("SESSION_NAME"), cookieStore))
 
 	router.HTMLRender = loadTemplates("./web/templates")
 
