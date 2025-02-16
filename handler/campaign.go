@@ -113,7 +113,7 @@ func (h *campaignHandler) UpdateCampaign(c *gin.Context) {
 }
 
 func (h *campaignHandler) Uploadimage(c *gin.Context) {
-	var input campaign.CreateCampaigImageInput
+	var input campaign.CreateCampaignImageInput
 
 	err := c.ShouldBind(&input)
 	if err != nil {

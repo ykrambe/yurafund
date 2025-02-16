@@ -4,6 +4,8 @@ import (
 	"time"
 	"yurafund/campaign"
 	"yurafund/user"
+
+	"github.com/leekchan/accounting"
 )
 
 type Transaction struct {
@@ -25,4 +27,9 @@ type TransactionNotificationInput struct {
 	OrderID           string `json:"order_id"`
 	PaymentType       string `json:"payment_type"`
 	FraudStatus       string `json:"fraud_status"`
+}
+
+func (t Transaction) AmountFormatIDR() string {
+	ac := accounting.Accounting{Symbol: "Rp", Precision: 2, Thousand: ".", Decimal: ","}
+	return ac.FormatMoney(t.Amount)
 }
