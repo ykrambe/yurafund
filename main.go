@@ -43,9 +43,15 @@ func main() {
 		log.Fatal(".env file not found")
 	}
 
-	validationEnv("PORT", "DATABASE_URL", "MIDTRANS_SERVER_KEY", "MIDTRANS_CLIENT_KEY", "JWT_SECRET", "SESSION_NAME")
+	validationEnv("PORT", "MIDTRANS_SERVER_KEY", "MIDTRANS_CLIENT_KEY", "JWT_SECRET", "SESSION_NAME", "DB_USER", "DB_PASSWORD", "DB_HOST", "DB_PORT", "DB_NAME")
 
-	dsn := os.Getenv("DATABASE_URL")
+	dbUser := os.Getenv("DB_USER")
+	dbPass := os.Getenv("DB_PASSWORD")
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	dbName := os.Getenv("DB_NAME")
+
+	dsn := dbUser + ":" + dbPass + "@tcp(" + dbHost + ":" + dbPort + ")/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err.Error())
