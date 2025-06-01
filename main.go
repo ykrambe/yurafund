@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 	"yurafund/auth"
 	"yurafund/campaign"
 	"yurafund/handler"
@@ -37,14 +36,13 @@ func validationEnv(vars ...string) {
 }
 
 func main() {
-	validationEnv("PORT", "MIDTRANS_SERVER_KEY", "MIDTRANS_CLIENT_KEY", "JWT_SECRET", "SESSION_NAME", "DB_USER", "DB_PASSWORD", "DB_HOST", "DB_PORT", "DB_NAME", "FRONTEND_URL")
+	validationEnv("PORT", "MIDTRANS_SERVER_KEY", "MIDTRANS_CLIENT_KEY", "JWT_SECRET", "SESSION_NAME", "DB_USER", "DB_PASSWORD", "DB_HOST", "DB_PORT", "DB_NAME")
 
 	dbUser := os.Getenv("DB_USER")
 	dbPass := os.Getenv("DB_PASSWORD")
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
 	dbName := os.Getenv("DB_NAME")
-	frontEndUrl := os.Getenv("FRONTEND_URL")
 
 	dsn := dbUser + ":" + dbPass + "@tcp(" + dbHost + ":" + dbPort + ")/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -77,13 +75,7 @@ func main() {
 	sessionWebHandler := webHandler.NewSessionHandler(userService)
 
 	router := gin.Default()
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{frontEndUrl}, // Atur URL frontend kamu
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
+	router.Use(cors.Default())
 	cookieStore := cookie.NewStore([]byte(auth.SECRET_KEY))
 	router.Use(sessions.Sessions(os.Getenv("SESSION_NAME"), cookieStore))
 
