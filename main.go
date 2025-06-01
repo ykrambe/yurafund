@@ -24,7 +24,6 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -38,12 +37,6 @@ func validationEnv(vars ...string) {
 }
 
 func main() {
-	//koneksi ke database mysql with gorm
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal(".env file not found")
-	}
-
 	validationEnv("PORT", "MIDTRANS_SERVER_KEY", "MIDTRANS_CLIENT_KEY", "JWT_SECRET", "SESSION_NAME", "DB_USER", "DB_PASSWORD", "DB_HOST", "DB_PORT", "DB_NAME")
 
 	dbUser := os.Getenv("DB_USER")
