@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 	"yurafund/auth"
 	"yurafund/campaign"
 	"yurafund/handler"
@@ -23,6 +24,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -37,6 +39,10 @@ func validationEnv(vars ...string) {
 
 func main() {
 	//koneksi ke database mysql with gorm
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal(".env file not found")
+	}
 
 	validationEnv("PORT", "MIDTRANS_SERVER_KEY", "MIDTRANS_CLIENT_KEY", "JWT_SECRET", "SESSION_NAME", "DB_USER", "DB_PASSWORD", "DB_HOST", "DB_PORT", "DB_NAME")
 
@@ -77,13 +83,20 @@ func main() {
 	sessionWebHandler := webHandler.NewSessionHandler(userService)
 
 	router := gin.Default()
-	router.Use(cors.Default())
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"}, // Atur URL frontend kamu
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 	cookieStore := cookie.NewStore([]byte(auth.SECRET_KEY))
 	router.Use(sessions.Sessions(os.Getenv("SESSION_NAME"), cookieStore))
 
 	router.HTMLRender = loadTemplates("./web/templates")
 
-	router.Static("/images", "./images")
+	router.Static("/user_images", "./user_images")
+	router.Static("/campaign_images", "./campaign_images")
 	router.Static("/css", "./web/assets/css")
 	router.Static("/js", "./web/assets/js")
 	router.Static("/webfonts", "./web/assets/webfonts")
@@ -100,6 +113,7 @@ func main() {
 
 	// endpoint campaign
 	api.GET("/campaigns", campaignHandler.GetCampaigns)
+	api.GET("/campaigns-limit", campaignHandler.GetCampaignsWithLimit)
 	api.GET("/campaigns/:id", authMiddleware(authService, userService), campaignHandler.GetCampaign)
 	api.POST("/campaigns", authMiddleware(authService, userService), campaignHandler.CreateCampaign)
 	api.PUT("/campaigns/:id", authMiddleware(authService, userService), campaignHandler.UpdateCampaign)

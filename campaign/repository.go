@@ -6,6 +6,7 @@ import (
 
 type Repository interface {
 	FindAll() ([]Campaign, error)
+	FindWithLimit(limit int) ([]Campaign, error)
 	FindByUserID(UserID int) ([]Campaign, error)
 	FindByID(ID int) (Campaign, error)
 	Save(campaign Campaign) (Campaign, error)
@@ -25,6 +26,15 @@ func NewRepository(db *gorm.DB) *repository {
 func (r *repository) FindAll() ([]Campaign, error) {
 	var campaigns []Campaign
 	err := r.db.Preload("CampaignImages", "campaign_images.is_primary = 1").Find(&campaigns).Error
+	if err != nil {
+		return campaigns, err
+	}
+	return campaigns, nil
+}
+
+func (r *repository) FindWithLimit(limit int) ([]Campaign, error) {
+	var campaigns []Campaign
+	err := r.db.Preload("CampaignImages", "campaign_images.is_primary = 1").Limit(limit).Find(&campaigns).Error
 	if err != nil {
 		return campaigns, err
 	}

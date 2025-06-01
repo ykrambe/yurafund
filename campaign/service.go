@@ -9,6 +9,7 @@ import (
 
 type Service interface {
 	GetCampaigns(userID int) ([]Campaign, error)
+	GetCampaignsWithLimit(limit int) ([]Campaign, error)
 	GetCampaignByID(input GetCampaignDetailInput) (Campaign, error)
 	CreateCampaign(input CreateCampaignInput) (Campaign, error)
 	UpdateCampaign(inputID GetCampaignDetailInput, inputData CreateCampaignInput) (Campaign, error)
@@ -33,6 +34,14 @@ func (s *service) GetCampaigns(userID int) ([]Campaign, error) {
 	}
 
 	campaigns, err := s.repository.FindAll()
+	if err != nil {
+		return campaigns, err
+	}
+	return campaigns, nil
+}
+
+func (s *service) GetCampaignsWithLimit(limit int) ([]Campaign, error) {
+	campaigns, err := s.repository.FindWithLimit(limit)
 	if err != nil {
 		return campaigns, err
 	}
